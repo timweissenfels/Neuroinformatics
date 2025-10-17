@@ -5,7 +5,7 @@
 #include "Matrix.h"
 
 #include <algorithm>
-#include <arm_neon.h>
+//#include <arm_neon.h>
 #include <iostream>
 
 namespace Math {
@@ -95,14 +95,14 @@ namespace Math {
         if (this->cols_ != other.rows_)
             throw std::invalid_argument("Incompatible matrix sizes");
 
-        Matrix result(this.rows_, other.cols_, 0);
+        Matrix result(this->rows_, other.cols_, 0);
 
         for (std::size_t r = 0; r < other.rows_; ++r) {
             for (std::size_t c = 0; c < other.cols_; ++c) {
 
             }
         }
-
+        return result;
     }
 
     template<floatTypes T>
