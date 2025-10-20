@@ -3,7 +3,7 @@
 //
 
 #include "Matrix.h"
-
+#include "Functions.h"
 #include <algorithm>
 //#include <arm_neon.h>
 #include <iostream>
@@ -90,16 +90,21 @@ namespace Math {
         return result;
     }
 
+    //TODO: Implement matmul more efficiently (e.g row major friendly)
     template<floatTypes T>
-    Matrix<T> Matrix<T>::matmul(const Matrix &other) const {
+    Matrix<T> Matrix<T>::matMul(const Matrix<T> &other) const {
+        // this (m x k) other (k x n) (rows x cols) c (m x n)
         if (this->cols_ != other.rows_)
             throw std::invalid_argument("Incompatible matrix sizes");
 
-        Matrix result(this->rows_, other.cols_, 0);
+        Matrix<T> result(this->rows_, other.cols_, 0);
 
-        for (std::size_t r = 0; r < other.rows_; ++r) {
+        for (std::size_t r = 0; r < this->rows_; ++r) {
             for (std::size_t c = 0; c < other.cols_; ++c) {
-
+                T sum = T{0};
+                for(std::size_t cr = 0; cr < this->cols_; cr++)
+                    sum += this->operator()(r,cr) * other(cr, c);
+                result(r,c) = sum;
             }
         }
         return result;
@@ -133,6 +138,7 @@ namespace Math {
         return result;
     }
 
+    //TODO: Implement swap
     template<floatTypes T>
     void Matrix<T>::swap(const Matrix &other) noexcept {
     }
@@ -164,6 +170,110 @@ namespace Math {
                 this->operator()(r,c) = this->operator()(r,c) - other(r,c);
             }
         }
+    }
+
+    // TODO: Improvable by a LOT
+    template<floatTypes T>
+    Matrix<T> Matrix<T>::hadamard(const Matrix &other) const {
+        if(this->rows_ != other.rows_ || this->cols_ != other.cols_)
+            throw std::invalid_argument("In Matrix::hadamard() sizes are not the same");
+
+        Matrix<T> result(this->rows_, this->cols_, 0);
+
+        for (std::size_t r = 0; r < this->rows_; ++r) {
+            for (std::size_t c = 0; c < this->cols_; ++c) {
+                result(r,c) = this->operator()(r,c) * other(r,c);
+            }
+        }
+
+        return result;
+    }
+
+    //TODO: Refer to Todo item for scalar_mul (use two templates, so std:function becomes F&& f)
+    template<floatTypes T>
+    Matrix<T> Matrix<T>::map(std::function<T(T)> f) const {
+        Matrix<T> result(this->rows_, this->cols_, this->stride_);
+
+        for (std::size_t r = 0; r < this->rows_; ++r) {
+            for (std::size_t c = 0; c < this->cols_; ++c) {
+                result(r,c) = f(this->operator()(r,c));
+            }
+        }
+
+        return result;
+    }
+
+    //TODO: Could be improved by inlining the mapping with return map([alpha](T x){ return alpha * x; }); according to chatgpt
+    template<floatTypes T>
+    Matrix<T> Matrix<T>::scalarMul(T alpha) const {
+        auto temp = [&](T value) { return alpha*value;};
+        return map(temp);
+    }
+
+    template<floatTypes T>
+    Matrix<T> Matrix<T>::sumOverColumns() const {
+        Matrix<T> result(this->rows_,1, 0);
+
+        for (std::size_t r = 0; r < this->rows_; ++r) {
+            T column_sum = {0};
+            for (std::size_t c = 0; c < this->cols_; ++c) {
+                column_sum += this->operator()(r,c);
+            }
+            result(r,0) = column_sum;
+        }
+
+        return result;
+    }
+
+    template<floatTypes T>
+    Matrix<T> Matrix<T>::addBias(const Matrix& bias) const {
+        if(bias.cols_ != 1 || bias.rows_ != this->rows_)
+            throw std::invalid_argument("In Matrix::addBias either bias matrix has more than 1 column or rows don't match");
+
+        Matrix<T> result(this->rows_, this->cols_, this->stride_);
+
+        for (std::size_t r = 0; r < this->rows_; ++r) {
+            for (std::size_t c = 0; c < this->cols_; ++c) {
+                result(r,c) = this->operator()(r,c) + bias(r, 0);
+            }
+        }
+
+        return result;
+    }
+
+    template<floatTypes T>
+    Matrix<T> Matrix<T>::sigmoid() const {
+        return this->map([](T num){return Math::Functions::sigmoid(num);});
+    }
+
+    template<floatTypes T>
+    Matrix<T> Matrix<T>::tanh() const {
+        return this->map([](T num){return Math::Functions::tanh(num);});
+    }
+
+    template<floatTypes T>
+    Matrix<T> Matrix<T>::relu() const {
+        return this->map([](T num){return Math::Functions::relu(num);});
+    }
+
+    template<floatTypes T>
+    Matrix<T> Matrix<T>::softplus() const {
+        return this->map([](T num){return Math::Functions::softplus(num);});
+    }
+
+    template<floatTypes T>
+    Matrix<T> Matrix<T>::mish() const {
+        return this->map([](T num){return Math::Functions::mish(num);});
+    }
+
+    template<floatTypes T>
+    Matrix<T> Matrix<T>::delu(const int a, const int b, const double xc) const {
+        return this->map([&](T num){return Math::Functions::delu(num, a, b, xc);});
+    }
+
+    template<floatTypes T>
+    Matrix<T> Matrix<T>::elu(const double alpha) const {
+        return this->map([&](T num){return Math::Functions::elu(num, alpha);});
     }
 
     template class Matrix<float>;
