@@ -7,12 +7,12 @@
 
 #include "ActivationTypes.h"
 
-namespace NeuralNetwork {
+namespace NeuralNetworks {
     enum class InitializationMode {
         He, Xavier, Lecun
     };
 
-    InitializationMode getInitializationModeFromActivationFunction(NeuralNetwork::ActivationTypes act);
+    InitializationMode getInitializationModeFromActivationFunction(NeuralNetworks::ActivationTypes act);
 }
 
 #endif //NEUROINFORMATICS_INITIALIZATIONMODE_H
