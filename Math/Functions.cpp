@@ -6,7 +6,6 @@
 #include "Functions.h"
 
 namespace Math::Functions {
-
     template <class T, class F>
     T log(F base, T num) {
        return std::log(num) / std::log(base);
@@ -17,6 +16,7 @@ namespace Math::Functions {
         return (std::exp(num) - std::exp(-num)) / (std::exp(num) + std::exp(-num)); //Okay to use std::tanh?
     }
 
+    // TODO: Check if its numerically stable for large |Z|
     template <class T>
     T sigmoid(T num) {
         return 1 / (1 + std::exp(-num)); // Logistic sigmoid
@@ -24,7 +24,7 @@ namespace Math::Functions {
 
     template <class T>
     T relu(T num) {
-        return std::max(T(0), num); // (x+|x|)/2 without std max function implementation
+        return std::max(T(0), num); // (x+|x|)/2 without std::max function implementation
     }
 
     template <class T>
