@@ -8,8 +8,11 @@ add_executable(Neuroinformatics main.cpp
         Math/Matrix.h
         Math/Functions.h
         Math/Functions.cpp
-        NeuralNetwork/DenseLayer.cpp
-        NeuralNetwork/DenseLayer.h
-        NeuralNetwork/ActivationTypes.h
-        NeuralNetwork/InitializationMode.cpp
-        NeuralNetwork/InitializationMode.h)
+        NeuralNetworks/DenseLayer.cpp
+        NeuralNetworks/DenseLayer.h
+        NeuralNetworks/ActivationTypes.h
+        NeuralNetworks/InitializationMode.cpp
+        NeuralNetworks/InitializationMode.h
+        NeuralNetworks/NeuralNetwork.cpp
+        NeuralNetworks/NeuralNetwork.h
+        NeuralNetworks/LossType.h)
