@@ -11,6 +11,13 @@
 namespace Math {
 
     template<floatTypes T>
+    Matrix<T>::Matrix() noexcept : rows_(0), cols_(0), stride_(0) {
+        stride_ = 0;  // round up
+
+        this->data_.resize(rows_ * stride_);
+    }
+
+    template<floatTypes T>
     Matrix<T>::Matrix(std::size_t rows, std::size_t cols, std::size_t stride): rows_(rows), cols_(cols), stride_(stride) {
         if (rows_ == 0 || cols_ == 0)
             throw std::invalid_argument("Invalid rows and columns provided, one of them is 0");
@@ -136,6 +143,14 @@ namespace Math {
             }
         }
         return result;
+    }
+
+    template<floatTypes T>
+    Matrix<T> Matrix<T>::divide(T value) const {
+        if(value == 0)
+            throw std::invalid_argument("Cant divide by 0 in Matrix divide function");
+
+        return this->map([&](T num){ return num / value;});
     }
 
     //TODO: Implement swap

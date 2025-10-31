@@ -36,6 +36,7 @@ public:
 
     // Con- & Destructors
     explicit Matrix(std::size_t rows, std::size_t cols, std::size_t stride = 0); // if stride=0, round up cols to a SIMD-friendly multiple (e.g., 8 for float on AVX2)
+    explicit Matrix() noexcept; // if stride=0, round up cols to a SIMD-friendly multiple (e.g., 8 for float on AVX2)
     Matrix(const Matrix& other) = default;
     Matrix(Matrix&& other) = default;
     ~Matrix() = default;
@@ -60,9 +61,10 @@ public:
     [[nodiscard]] Matrix matMul(const Matrix& other) const;
     [[nodiscard]] Matrix add(const Matrix& other) const;
     [[nodiscard]] Matrix sub(const Matrix& other) const;
+    [[nodiscard]] Matrix divide(T value) const;
     [[nodiscard]] Matrix hadamard(const Matrix& other) const;
     [[nodiscard]] Matrix map(std::function<T(T)> f) const;
-    [[nodiscard]] Matrix scalarMul(T alpha) const;
+    [[nodiscard]] Matrix scalarMul(T value) const;
     [[nodiscard]] Matrix sumOverColumns() const;
     [[nodiscard]] Matrix addBias(const Matrix& bias) const;
 
@@ -82,8 +84,6 @@ public:
     void addInplace(const Matrix& other);
     void subInplace(const Matrix& other);
 };
-
-
 
     // ChatGPT generated
     template<floatTypes T>
