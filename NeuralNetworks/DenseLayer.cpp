@@ -77,13 +77,15 @@ namespace NeuralNetworks {
             return mat.delu();
         else if(this->act == NeuralNetworks::ActivationTypes::Mish)
            return mat.mish();
+        else if(this->act == NeuralNetworks::ActivationTypes::Linear)
+            return mat.linear();
         else
            return mat.tanh();
     }
 
     template<Math::floatTypes T>
-    Math::Matrix<T> DenseLayer<T>::applyDerivative(bool returnLinearDerivative) const {
-        if(returnLinearDerivative)
+    Math::Matrix<T> DenseLayer<T>::applyDerivative() const {
+        if(this->act == NeuralNetworks::ActivationTypes::Linear)
             return this->linearDerivative(A.rows(), A.cols(), A.stride());
         else if(this->act == NeuralNetworks::ActivationTypes::Tanh)
             return this->tanhDerivative();
@@ -100,7 +102,7 @@ namespace NeuralNetworks {
         else if(this->act == NeuralNetworks::ActivationTypes::Mish)
             return this->mishDerivative();
         else
-            return this->linearDerivative(0,0,0);
+            throw std::logic_error("Derivative type is unknown in DenseLayer::applyDerivative");
     }
 
     template<Math::floatTypes T>
@@ -136,8 +138,8 @@ namespace NeuralNetworks {
         if(dA.cols() != this->Z.cols())
             throw std::invalid_argument("dA upstream passes does not match the Z batch size");
 
-        const std::size_t m = this->Aprev.cols();
-        this->dZ = dA.hadamard(applyDerivative(false));
+        const T m = this->Aprev.cols();
+        this->dZ = dA.hadamard(applyDerivative());
         this->dW = (this->dZ.matMul(this->Aprev.transpose())).divide(m);
         this->db = dZ.sumOverColumns().divide(m);
         return this->W.transpose().matMul(this->dZ); // Return dAprev
