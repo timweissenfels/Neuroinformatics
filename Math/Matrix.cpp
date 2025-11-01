@@ -50,7 +50,7 @@ namespace Math {
     }
 
     template<floatTypes T>
-    std::span<const T> Matrix<T>::data() noexcept {
+    std::span<T> Matrix<T>::data() noexcept {
         return this->data_;
     }
 
@@ -97,6 +97,24 @@ namespace Math {
         return result;
     }
 
+    template<floatTypes T>
+    T Matrix<T>::mean() const {
+        T result = 0;
+
+        for (std::size_t c = 0; c < cols_; ++c) {
+            for (std::size_t r = 0; r < rows_; ++r) {
+                result += (*this)(r,c);
+            }
+        }
+
+        return result / (this->rows_ * this->cols_);
+    }
+
+    template<floatTypes T>
+    Matrix<T> Matrix<T>::clip(const T epsilon) const {
+        return this->map([&](T num){ return Math::Functions::clamp(num, epsilon);});
+    }
+
     //TODO: Implement matmul more efficiently (e.g row major friendly)
     template<floatTypes T>
     Matrix<T> Matrix<T>::matMul(const Matrix<T> &other) const {
@@ -134,7 +152,7 @@ namespace Math {
     template<floatTypes T>
     Matrix<T> Matrix<T>::sub(const Matrix &other) const {
         if (this->rows_ != other.rows_ || this->cols_ != other.cols_ || this->stride_ != other.stride_)
-            throw std::invalid_argument("In Matrix::add() is not the same size as other (rows/cols/stride)");
+            throw std::invalid_argument("In Matrix::sub() is not the same size as other (rows/cols/stride)");
 
         Matrix<T> result(this->rows_, this->cols_, this->stride_);
         for (std::size_t r = 0; r < this->rows_; ++r) {
@@ -178,7 +196,7 @@ namespace Math {
     template<floatTypes T>
     void Matrix<T>::subInplace(const Matrix &other) {
         if (this->rows_ != other.rows_ || this->cols_ != other.cols_ || this->stride_ != other.stride_)
-            throw std::invalid_argument("In Matrix::add() is not the same size as other (rows/cols/stride)");
+            throw std::invalid_argument("In Matrix::subInplace() is not the same size as other (rows/cols/stride)");
 
         for (std::size_t r = 0; r < this->rows_; ++r) {
             for (std::size_t c = 0; c < this->cols_; ++c) {
@@ -191,7 +209,7 @@ namespace Math {
     template<floatTypes T>
     Matrix<T> Matrix<T>::hadamard(const Matrix &other) const {
         if(this->rows_ != other.rows_ || this->cols_ != other.cols_)
-            throw std::invalid_argument("In Matrix::hadamard() sizes are not the same");
+            throw std::invalid_argument("In Matrix::hadamard() shapes are not the same");
 
         Matrix<T> result(this->rows_, this->cols_, 0);
 
@@ -240,6 +258,23 @@ namespace Math {
         return result;
     }
 
+    // TODO: Improvable by a LOT
+    template<floatTypes T>
+    Matrix<T> Matrix<T>::divide(const Matrix &other) const {
+        if(this->rows_ != other.rows_ || this->cols_ != other.cols_ || this->stride_ != other.stride_)
+            throw std::invalid_argument("In Matrix::divide() shape or stride are not the same");
+
+        Matrix<T> result(this->rows_, this->cols_, 0);
+
+        for (std::size_t r = 0; r < this->rows_; ++r) {
+            for (std::size_t c = 0; c < this->cols_; ++c) {
+                result(r,c) = this->operator()(r,c) / other(r,c);
+            }
+        }
+
+        return result;
+    }
+
     template<floatTypes T>
     Matrix<T> Matrix<T>::addBias(const Matrix& bias) const {
         if(bias.cols_ != 1 || bias.rows_ != this->rows_)
@@ -279,6 +314,16 @@ namespace Math {
     template<floatTypes T>
     Matrix<T> Matrix<T>::mish() const {
         return this->map([](T num){return Math::Functions::mish(num);});
+    }
+
+    template<floatTypes T>
+    Matrix<T> Matrix<T>::linear() const {
+        return this->map([](T num){return Math::Functions::linear(num);});
+    }
+
+    template<floatTypes T>
+    Matrix<T> Matrix<T>::log(const T base) const {
+        return this->map([&](T num){return Math::Functions::log(base, num);});
     }
 
     template<floatTypes T>

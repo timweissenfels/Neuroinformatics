@@ -26,6 +26,9 @@ namespace Math {
 template<typename T>
 concept floatTypes = std::is_floating_point_v<T>;
 
+template<typename T>
+concept numericTypes = std::is_arithmetic_v<T>;
+
 template <floatTypes T>
 class Matrix {
 private:
@@ -33,7 +36,6 @@ private:
     std::vector<T> data_;
     std::size_t rows_, cols_, stride_;
 public:
-
     // Con- & Destructors
     explicit Matrix(std::size_t rows, std::size_t cols, std::size_t stride = 0); // if stride=0, round up cols to a SIMD-friendly multiple (e.g., 8 for float on AVX2)
     explicit Matrix() noexcept; // if stride=0, round up cols to a SIMD-friendly multiple (e.g., 8 for float on AVX2)
@@ -48,7 +50,7 @@ public:
     const T& operator()(std::size_t r, std::size_t c) const;
 
     // Getter & Setter
-    [[nodiscard]] std::span<const T> data() noexcept;
+    [[nodiscard]] std::span<T> data() noexcept;
     [[nodiscard]] std::span<const T> data() const noexcept;
     [[nodiscard]] std::size_t rows() const noexcept;
     [[nodiscard]] std::size_t cols() const noexcept;
@@ -58,10 +60,13 @@ public:
 
     // Functions
     [[nodiscard]] Matrix transpose() const;
+    [[nodiscard]] T mean() const;
+    [[nodiscard]] Matrix clip(const T epsilon) const;
     [[nodiscard]] Matrix matMul(const Matrix& other) const;
     [[nodiscard]] Matrix add(const Matrix& other) const;
     [[nodiscard]] Matrix sub(const Matrix& other) const;
     [[nodiscard]] Matrix divide(T value) const;
+    [[nodiscard]] Matrix divide(const Matrix& other) const;
     [[nodiscard]] Matrix hadamard(const Matrix& other) const;
     [[nodiscard]] Matrix map(std::function<T(T)> f) const;
     [[nodiscard]] Matrix scalarMul(T value) const;
@@ -75,7 +80,9 @@ public:
     [[nodiscard]] Matrix relu() const;
     [[nodiscard]] Matrix elu(const double) const;
     [[nodiscard]] Matrix softplus() const;
+    [[nodiscard]] Matrix linear() const;
     [[nodiscard]] Matrix mish() const;
+    [[nodiscard]] Matrix log(const T base) const;
     [[nodiscard]] Matrix delu(const int a = 1, const int b = 2, const double = 1.25643) const;
 
     // Inplace functions
