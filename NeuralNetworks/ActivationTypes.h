@@ -7,7 +7,7 @@
 
 namespace NeuralNetworks {
     enum class ActivationTypes {
-        ReLU, Sigmoid, Softplus, Delu, Elu, Tanh, SELU, LeakyReLU, Mish
+        ReLU, Sigmoid, Softplus, Delu, Elu, Tanh, SELU, LeakyReLU, Mish, Linear
     };
 }
 
