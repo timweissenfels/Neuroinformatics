@@ -4,15 +4,18 @@
 
 #include "InitializationMode.h"
 
-NeuralNetworks::InitializationMode getInitializationModeFromActivationFunction(NeuralNetworks::ActivationTypes act) {
-    if(act == NeuralNetworks::ActivationTypes::ReLU || act == NeuralNetworks::ActivationTypes::LeakyReLU)
-        return NeuralNetworks::InitializationMode::He;
+namespace NeuralNetworks {
+    NeuralNetworks::InitializationMode
+    getInitializationModeFromActivationFunction(NeuralNetworks::ActivationTypes act) {
+        if (act == NeuralNetworks::ActivationTypes::ReLU || act == NeuralNetworks::ActivationTypes::LeakyReLU)
+            return NeuralNetworks::InitializationMode::He;
 
-    if(act == NeuralNetworks::ActivationTypes::Sigmoid || act == NeuralNetworks::ActivationTypes::Tanh)
+        if (act == NeuralNetworks::ActivationTypes::Sigmoid || act == NeuralNetworks::ActivationTypes::Tanh)
+            return NeuralNetworks::InitializationMode::Xavier;
+
+        if (act == NeuralNetworks::ActivationTypes::SELU)
+            return NeuralNetworks::InitializationMode::Lecun;
+
         return NeuralNetworks::InitializationMode::Xavier;
-
-    if(act == NeuralNetworks::ActivationTypes::SELU)
-        return NeuralNetworks::InitializationMode::Lecun;
-
-    return NeuralNetworks::InitializationMode::Xavier;
+    }
 }
