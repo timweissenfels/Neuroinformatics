@@ -15,11 +15,11 @@ namespace NeuralNetworks {
     template<Math::floatTypes T>
     class DenseLayer {
     private:
+        std::mt19937& gen; // Random generator for norm distributions used for the weigths
         std::size_t inNodes; // Number of nodes from last layer
         std::size_t outNodes; // Number of nodes in this layer
         NeuralNetworks::ActivationTypes act; // Activation function
         InitializationMode initMode; // Initialization Mode picked based on the activation function
-        std::mt19937& gen; // Random generator for norm distributions used for the weigths
 
         Math::Matrix<T> W; // Weights; Shape (outNodes x inNodes)
         Math::Matrix<T> b; // Biases; Shape (outNodes x 1) only one per Node
@@ -35,7 +35,7 @@ namespace NeuralNetworks {
         void heInitializer();
         void lecunInitializer();
         Math::Matrix<T> applyActivation(const Math::Matrix<T>&) const;
-        Math::Matrix<T> applyDerivative(bool = false) const;
+        Math::Matrix<T> applyDerivative() const;
 
         Math::Matrix<T> linearDerivative(std::size_t, std::size_t, std::size_t) const;
         Math::Matrix<T> sigmoidDerivative() const;
