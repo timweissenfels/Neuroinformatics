@@ -125,7 +125,7 @@ namespace NeuralNetworks {
     }
 
     template<Math::floatTypes T>
-    Math::Matrix<T> DenseLayer<T>::backward(const Math::Matrix<T> &dA) {
+    Math::Matrix<T> DenseLayer<T>::backward(const Math::Matrix<T> &dA, bool treatInputASdZ) {
         if(dA.rows() != this->outNodes)
             throw std::invalid_argument("dA Shape is not matching features of the layer");
 
@@ -139,7 +139,12 @@ namespace NeuralNetworks {
             throw std::invalid_argument("dA upstream passes does not match the Z batch size");
 
         const T m = this->Aprev.cols();
-        this->dZ = dA.hadamard(applyDerivative());
+
+        if(treatInputASdZ) // BCE + Sigmoid trick
+            this->dZ = dA;
+        else
+            this->dZ = dA.hadamard(applyDerivative());
+
         this->dW = (this->dZ.matMul(this->Aprev.transpose())).divide(m);
         this->db = dZ.sumOverColumns().divide(m);
         return this->W.transpose().matMul(this->dZ); // Return dAprev
@@ -149,6 +154,16 @@ namespace NeuralNetworks {
     void DenseLayer<T>::update(T lr) {
         this->W = this->W.sub(this->dW.scalarMul(lr));
         this->b = this->b.sub(this->db.scalarMul(lr));
+    }
+
+    template<Math::floatTypes T>
+    ActivationTypes DenseLayer<T>::getActivation() noexcept {
+        return this->act;
+    }
+
+    template<Math::floatTypes T>
+    Math::Matrix<T> DenseLayer<T>::getA() noexcept {
+        return this->A;
     }
 
     template<Math::floatTypes T>

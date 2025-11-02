@@ -66,8 +66,16 @@ namespace NeuralNetworks {
             dALast = (term1.add(term2)).scalarMul((T{1})); //TODO: Same check for /m as in MSE
         }
 
-        auto dA = layers.back().backward(dALast);
-        for(int i = this->layers.size()-2; i >= 0; i--) {
+        Math::Matrix<T> dA;
+
+        if(this->loss == LossType::BCE && this->layers.back().getActivation() == ActivationTypes::Sigmoid) {
+            Math::Matrix<T> dZLast = layers.back().getA().sub(Y);
+            dA = layers.back().backward(dZLast, true);
+        } else {
+            dA = layers.back().backward(dALast);
+        }
+
+        for(int i =this->layers.size()-2; i >= 0; i--) {
             dA = layers[i].backward(dA);
         }
     }
