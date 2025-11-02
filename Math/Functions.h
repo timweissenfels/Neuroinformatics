@@ -66,6 +66,6 @@ namespace Math::Functions {
 
     template <class T>
     T clamp(const T num, const T epsilon = 1e-7) {
-        return std::clamp(num, T{1}-epsilon, epsilon);
+        return std::clamp(num, epsilon, T{1} - epsilon);
     }
 }
