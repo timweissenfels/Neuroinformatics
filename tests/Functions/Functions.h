@@ -32,8 +32,8 @@ TEST_CASE("FUNCTIONS") {
 
     SECTION("tanh matches std::tanh and is odd") {
         for (double x : { -3.0, -1.0, -0.1, 0.0, 0.1, 1.0, 3.0 }) {
-            REQUIRE( tanh(x) == Approx(std::tanh(x)).epsilon(1e-12) );
-            REQUIRE( tanh(-x) == Approx(-tanh(x)).epsilon(1e-12) );
+            REQUIRE( Math::Function::tanh(x) == Approx(std::tanh(x)).epsilon(1e-12) );
+            REQUIRE( Math::Function::tanh(-x) == Approx(-tanh(x)).epsilon(1e-12) );
         }
     }
 
@@ -53,12 +53,12 @@ TEST_CASE("FUNCTIONS") {
 
     SECTION("relu piecewise") {
         REQUIRE( Math::Functions::relu(-3.5) == Approx(0.0).margin(0.0) );
-        REQUIRE( relu(0.0)  == Approx(0.0).margin(0.0) );
-        REQUIRE( relu(2.25) == Approx(2.25).epsilon(1e-12) );
+        REQUIRE( Math::Function::relu(0.0)  == Approx(0.0).margin(0.0) );
+        REQUIRE( Math::Function::relu(2.25) == Approx(2.25).epsilon(1e-12) );
 
         // float as well
-        REQUIRE( relu(-1.0f) == Approx(0.0f).margin(0.0f) );
-        REQUIRE( relu(5.0f)  == Approx(5.0f).epsilon(1e-6f) );
+        REQUIRE( Math::Function::relu(-1.0f) == Approx(0.0f).margin(0.0f) );
+        REQUIRE( Math::Function::relu(5.0f)  == Approx(5.0f).epsilon(1e-6f) );
     }
 
     SECTION("softplus equals log(1+exp(x))") {
