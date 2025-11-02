@@ -8,7 +8,7 @@
 #include <functional>
 #include <utility>
 
-// Output Bittset could also be a tuple tbh
+// Output Bitset could also be a tuple tbh
 template <std::size_t T, std::size_t F>
 std::vector<std::pair<std::bitset<T>, std::bitset<F>>> generateNNData(std::function<std::bitset<F>(const std::bitset<T>)> mapper) {
 
@@ -23,20 +23,4 @@ std::vector<std::pair<std::bitset<T>, std::bitset<F>>> generateNNData(std::funct
     return returnVector;
 }
 
-int main() {
-    constexpr unsigned short inputShape = 2;
-    constexpr unsigned short outputShape = 1;
 
-    auto mapper = [](const std::bitset<inputShape>& input) -> std::bitset<outputShape> {
-        std::bitset<1> result;
-        result[0] = input[0] && input[1];
-        return result;
-    };
-
-    auto data = generateNNData<inputShape, outputShape>(mapper);
-
-    for (const auto& pair : data) {
-        std::cout << "Input: " << pair.first << " - Output: " << pair.second << '\n';
-    }
-    return 0;
-}
