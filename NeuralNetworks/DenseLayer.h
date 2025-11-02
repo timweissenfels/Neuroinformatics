@@ -49,9 +49,12 @@ namespace NeuralNetworks {
     public:
         explicit DenseLayer(std::size_t _inNodes, std::size_t _outNodes, NeuralNetworks::ActivationTypes _act, std::mt19937& gen, bool initializeInConstructor = true); // Constructor
         [[nodiscard]] Math::Matrix<T> forward(const Math::Matrix<T>& Aprev); // Returns A, stores Aprev and Z
-        [[nodiscard]] Math::Matrix<T> backward(const Math::Matrix<T>& dA); // Returns dA_prev; also computs dW, db stored  internally for updated
+        [[nodiscard]] Math::Matrix<T> backward(const Math::Matrix<T>& dA, bool treatInputAsdZ = false); // Returns dA_prev; also computs dW, db stored  internally for updated
         [[nodiscard]] std::size_t getinNodes() noexcept;
         [[nodiscard]] std::size_t getoutNodes() noexcept;
+        [[nodiscard]] ActivationTypes getActivation() noexcept;
+        [[nodiscard]] Math::Matrix<T> getA() noexcept;
+
 
         void update(T lr); //SGD step: W -= learningRate*dW; b -= learningRate*db
         void initialize();
