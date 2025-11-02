@@ -4,10 +4,12 @@
 
 #include "NeuralNetwork.h"
 
+#include <chrono>
+
 namespace NeuralNetworks {
     template<Math::floatTypes T>
-    NeuralNetwork<T>::NeuralNetwork(LossType _loss, double _learningRate, std::size_t _epochs, std::size_t _batchSize, std::size_t rngSeed, Math::Matrix<T> &_data)
-        : loss(_loss), learningRate(_learningRate), epochs(_epochs), batchSize(_batchSize),  data(_data) {
+    NeuralNetwork<T>::NeuralNetwork(LossType _loss, double _learningRate, std::size_t _epochs, std::size_t _batchSize, std::size_t rngSeed)
+        : loss(_loss), learningRate(_learningRate), epochs(_epochs), batchSize(_batchSize) {
         this->gen = std::mt19937 {static_cast<uint32_t>(rngSeed)};
     }
 
@@ -78,6 +80,28 @@ namespace NeuralNetworks {
         for(int i =this->layers.size()-2; i >= 0; i--) {
             dA = layers[i].backward(dA);
         }
+    }
+
+    // TODO: Implement batching
+    template<Math::floatTypes T>
+    T NeuralNetwork<T>::train(const Math::Matrix<T> &X, const Math::Matrix<T> &Y, bool timeExecution, bool printLoss, std::size_t printLossEveryXEpoch, bool exportLoss, std::size_t exportLossEveryXEpoch) {
+        auto startTime = std::chrono::high_resolution_clock::now();
+
+        for(std::size_t epoch = 0; epoch < this->epochs; epoch++) {
+            auto Yhat = this->forward(X);
+            if(printLoss)
+                if(epoch % printLossEveryXEpoch == 0)
+                    std::printf("%lf \n", this->compute_loss(Y, Yhat));
+
+            this->backward(Y, Yhat);
+            this->update();
+        }
+
+        if(timeExecution)
+            std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - startTime) << std::endl;
+
+        auto Yhat = this->forward(X);
+        return this->compute_loss(Y, Yhat);
     }
 
     template<Math::floatTypes T>

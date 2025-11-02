@@ -12,27 +12,17 @@ void sinPOC() {
     auto Y = Math::Matrix<float>(1,71,0);
 
     for(int i = 0; i <= 70; i++) {
-        X(0, i) = (float)i/10;
-        Y(0,i) = sinf((float)i/10) + cosf((float)i/10);
+        X(0, i) = static_cast<float>(i)/10;
+        Y(0,i) = sinf(static_cast<float>(i)/10) + cosf(static_cast<float>(i)/10);
     }
 
-    NeuralNetworks::NeuralNetwork sinNN(NeuralNetworks::LossType::MSE, (double)0.09, 1000, 32, 42, X);
+    NeuralNetworks::NeuralNetwork<float> sinNN(NeuralNetworks::LossType::MSE, 0.09, 5000, 32, 42);
     sinNN.AddDenseLayer(1,4,NeuralNetworks::ActivationTypes::Tanh);
     sinNN.AddDenseLayer(4,1,NeuralNetworks::ActivationTypes::Linear);
 
-    auto start = std::chrono::high_resolution_clock::now();
+    auto finalLoss = sinNN.train(X, Y, true, true, 1000);
 
-    for (int step = 0; step < 5000; ++step) {
-        auto YHat = sinNN.forward(X);
-        float loss = sinNN.compute_loss(Y, YHat);
-        if (step % 50 == 0) std::cout << "step " << step << " loss " << loss << "\n";
-        sinNN.backward(Y, YHat);
-        sinNN.update();
-    }
-
-    auto YHat = sinNN.forward(X);
-    std::cout << "final loss " << sinNN.compute_loss(Y, YHat) << "\n";
-    std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start);
+    std::cout << "final loss " << finalLoss << "\n";
 }
 
 void xorPOC() {
@@ -55,23 +45,12 @@ void xorPOC() {
     X(1,3) = 1;
     Y(0,3) = 0;
 
-    NeuralNetworks::NeuralNetwork xorNN(NeuralNetworks::LossType::BCE, (double)0.05, 1000, 32, 42, X);
+    NeuralNetworks::NeuralNetwork<float> xorNN(NeuralNetworks::LossType::BCE, (double)0.05, 5000, 32, 42);
     xorNN.AddDenseLayer(2,8,NeuralNetworks::ActivationTypes::ReLU);
     xorNN.AddDenseLayer(8,1,NeuralNetworks::ActivationTypes::Sigmoid);
 
-    auto start = std::chrono::high_resolution_clock::now();
-
-    for (int step = 0; step < 5000; ++step) {
-        auto YHat = xorNN.forward(X);
-        float loss = xorNN.compute_loss(Y, YHat);
-        if (step % 50 == 0) std::cout << "step " << step << " loss " << loss << "\n";
-        xorNN.backward(Y, YHat);
-        xorNN.update();
-    }
-
-    auto YHat = xorNN.forward(X);
-    std::cout << "final loss " << xorNN.compute_loss(Y, YHat) << "\n";
-    std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start);
+    auto finalLoss = xorNN.train(X, Y, true, true, 1000);
+    std::cout << "final loss " << finalLoss << "\n";
 }
 
 std::pair<Math::Matrix<float>, Math::Matrix<float>> generateNNDataLogicCurcit() {
@@ -108,34 +87,23 @@ std::pair<Math::Matrix<float>, Math::Matrix<float>> generateNNDataLogicCurcit() 
 
 void logicPOC() {
     auto data = generateNNDataLogicCurcit();
-    auto X = data.first;
-    auto Y = data.second;
+    auto& X = data.first;
+    auto& Y = data.second;
 
-    NeuralNetworks::NeuralNetwork xorNN(NeuralNetworks::LossType::BCE, (double)0.05, 1000, 32, 42, X);
+    NeuralNetworks::NeuralNetwork<float> xorNN(NeuralNetworks::LossType::BCE, 0.05, 5000, 32, 42);
     xorNN.AddDenseLayer(3,8,NeuralNetworks::ActivationTypes::Tanh);
     xorNN.AddDenseLayer(8,8,NeuralNetworks::ActivationTypes::Tanh);
     xorNN.AddDenseLayer(8,1,NeuralNetworks::ActivationTypes::Sigmoid);
 
-    auto start = std::chrono::high_resolution_clock::now();
+    auto finalLoss = xorNN.train(X, Y, true, true, 5000);
 
-    for (int step = 0; step < 5000; ++step) {
-        auto YHat = xorNN.forward(X);
-        float loss = xorNN.compute_loss(Y, YHat);
-        if (step % 50 == 0) std::cout << "step " << step << " loss " << loss << "\n";
-        xorNN.backward(Y, YHat);
-        xorNN.update();
-    }
-
-    auto YHat = xorNN.forward(X);
-    std::cout << "final loss " << xorNN.compute_loss(Y, YHat) << "\n";
-    std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start);
-
+    std::cout << "final loss " << finalLoss << "\n";
 }
 
 int main() {
     sinPOC();
-    // xorPOC();
-    //logicPOC();
+    xorPOC();
+    logicPOC();
 
     return 0;
 }
