@@ -1,0 +1,42 @@
+//
+// Created by timwe on 10/17/2025.
+//
+
+#ifndef NEUROINFORMATICS_FUNCTIONS_H_OLD
+#define NEUROINFORMATICS_FUNCTIONS_H_OLD
+
+#include <cmath>
+
+namespace Math::Functions {
+    template <class T, class F>
+    [[nodiscard]] T log(F base, T num);
+
+    template <class T>
+    [[nodiscard]] T tanh(T num);
+
+    template <class T>
+    T sigmoid(T num);
+
+    template <class T>
+    T relu(T num);
+
+    template <class T>
+    T softplus(T num);
+
+    template <class T>
+    T mish(T num);
+
+    template <class T>
+    T delu(T num, int a = 1, int b = 2, double xc = 1.25643);
+
+    template <class T, class F>
+    T elu(T num, F alpha);
+
+    template<class T>
+    T clip(const T num, const T epsilon = 1e-7);
+
+    template<class T>
+    T clamp(const T num, const T epsilon = 1e-7);
+}
+
+#endif //NEUROINFORMATICS_FUNCTIONS_H_OLD
