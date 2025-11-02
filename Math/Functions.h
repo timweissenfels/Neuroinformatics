@@ -1,6 +1,8 @@
 //
 // Created by timwe on 10/17/2025.
 //
+#ifndef FUNCTIONS_H
+#define FUNCTIONS_H
 
 #include <iostream>
 #include <algorithm>
@@ -69,3 +71,4 @@ namespace Math::Functions {
         return std::clamp(num, epsilon, T{1} - epsilon);
     }
 }
+#endif // FUNCTIONS_H
