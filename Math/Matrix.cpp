@@ -88,13 +88,37 @@ namespace Math {
     Matrix<T> Matrix<T>::transpose() const {
         Matrix<T> result(cols_, rows_, 0); // Swap rows and col sizes / make sure stride gets recalculated
 
-        for (std::size_t c = 0; c < cols_; ++c) {
-            for (std::size_t r = 0; r < rows_; ++r) {
+        for (std::size_t c = 0; c < this->cols_; ++c) {
+            for (std::size_t r = 0; r < this->rows_; ++r) {
                 result(c,r) = (*this)(r,c);
             }
         }
 
         return result;
+    }
+
+    template<floatTypes T>
+    T Matrix<T>::meanOfRow(const std::size_t row) const {
+        T result = 0;
+
+        for (std::size_t c = 0; c < this->cols_; ++c) {
+                result += (*this)(row,c);
+            }
+
+        return result /  this->cols_;
+    }
+
+    template<floatTypes T>
+    T Matrix<T>::stdDevOfRow(const std::size_t row) const {
+        T result = 0;
+
+        const T mean = this->meanOfRow(row);
+
+        for (std::size_t c = 0; c < this->cols_; ++c) {
+            result += ((*this)(row,c) - mean) * ((*this)(row,c) - mean);
+        }
+
+        return std::sqrt((T{1}/(static_cast<T>(this->cols_) - T{1})) * result);
     }
 
     template<floatTypes T>

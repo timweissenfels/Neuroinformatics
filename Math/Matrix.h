@@ -61,6 +61,8 @@ public:
     // Functions
     [[nodiscard]] Matrix transpose() const;
     [[nodiscard]] T mean() const;
+    [[nodiscard]] T meanOfRow(const std::size_t row) const;
+    [[nodiscard]] T stdDevOfRow(const std::size_t row) const;
     [[nodiscard]] Matrix clip(const T epsilon) const;
     [[nodiscard]] Matrix matMul(const Matrix& other) const;
     [[nodiscard]] Matrix add(const Matrix& other) const;
