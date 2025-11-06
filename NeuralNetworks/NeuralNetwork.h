@@ -9,6 +9,7 @@
 #include "ActivationTypes.h"
 #include "DenseLayer.h"
 #include "LossType.h"
+#include "ScalerType.h"
 
 namespace NeuralNetworks {
     template<Math::floatTypes T>
@@ -30,9 +31,13 @@ namespace NeuralNetworks {
                            bool initializeConstructor = true);
 
         Math::Matrix<T> forward(const Math::Matrix<T> &X); // X -> shape (n_0 x m)
+
         T compute_loss(const Math::Matrix<T>& Y, const Math::Matrix<T>& Yhat);
         void backward(const Math::Matrix<T>& Y, const Math::Matrix<T>& Yhat);
         T train(const Math::Matrix<T>& X, const Math::Matrix<T>& Y, bool timeExecution = false, bool printLoss = false, std::size_t printLossEveryXEpoch = 50, bool exportLoss = false, std::size_t exportLossEveryXEpoch = 50);
+        std::tuple<Math::Matrix<T>, Math::Matrix<T>, Math::Matrix<T>, Math::Matrix<T>> trainTestSplit(const Math::Matrix<T>& X, const Math::Matrix<T>& Y, float trainSizeFloat);
+
+        static void inplaceScaleFeature(std::size_t featureIndex, Math::Matrix<T> &X, ScalerType scaler = ScalerType::zScore);
 
         void update();
 

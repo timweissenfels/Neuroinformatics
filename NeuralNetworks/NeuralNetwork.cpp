@@ -87,11 +87,14 @@ namespace NeuralNetworks {
     T NeuralNetwork<T>::train(const Math::Matrix<T> &X, const Math::Matrix<T> &Y, bool timeExecution, bool printLoss, std::size_t printLossEveryXEpoch, bool exportLoss, std::size_t exportLossEveryXEpoch) {
         auto startTime = std::chrono::high_resolution_clock::now();
 
+        // std::vector<size_t> idx(X.rows());
+        // std::iota(std::begin(idx), std::end(idx), 0);
+
         for(std::size_t epoch = 0; epoch < this->epochs; epoch++) {
             auto Yhat = this->forward(X);
             if(printLoss)
                 if(epoch % printLossEveryXEpoch == 0)
-                    std::printf("%lf \n", this->compute_loss(Y, Yhat));
+                    std::printf("Loss: %lf \n", this->compute_loss(Y, Yhat));
 
             this->backward(Y, Yhat);
             this->update();
@@ -102,6 +105,68 @@ namespace NeuralNetworks {
 
         auto Yhat = this->forward(X);
         return this->compute_loss(Y, Yhat);
+    }
+
+    // TODO: Should I shuffle the Data first before splitting?
+    template<Math::floatTypes T>
+    std::tuple<Math::Matrix<T>, Math::Matrix<T>, Math::Matrix<T>, Math::Matrix<T>> NeuralNetwork<T>::trainTestSplit(
+        const Math::Matrix<T> &X, const Math::Matrix<T> &Y, const float trainSizeFloat) {
+
+        const std::size_t N = X.cols();
+
+        auto endTrain = std::floor(trainSizeFloat * static_cast<float>(N));
+
+        auto startTest = endTrain + 1;
+        auto endTest = N;
+
+        Math::Matrix<T> XTrain(X.rows(), endTrain, 0);
+        Math::Matrix<T> YTrain(Y.rows(), endTrain, 0);
+
+        Math::Matrix<T> XTest(X.rows(), endTest - startTest, 0);
+        Math::Matrix<T> YTest(Y.rows(), endTest - startTest, 0);
+
+        for(int i = 0; i < endTrain; i++) {
+            for(int j = 0; j < X.rows(); j++) {
+                XTrain(j, i) = X(j, i);
+            }
+            for(int j = 0; j < Y.rows(); j++) {
+                YTrain(j, i) = Y(j, i);
+            }
+        }
+
+        for(int i = startTest; i < endTest; i++) {
+            for(int j = 0; j < X.rows(); j++) {
+                XTest(j, i - startTest) = X(j, i);
+            }
+            for(int j = 0; j < Y.rows(); j++) {
+                YTest(j, i - startTest) = Y(j, i);
+            }
+        }
+
+        return {XTrain, YTrain, XTest, YTest};
+    }
+
+    template <Math::floatTypes T>
+    void NeuralNetwork<T>::inplaceScaleFeature(std::size_t featureIndex, Math::Matrix<T> &X, ScalerType scaler) {
+        if(featureIndex >= X.rows())
+            throw std::logic_error("Feature index out of bounds");
+
+        if(scaler == ScalerType::minMax) {
+            // TODO: Implement
+            throw std::logic_error("MinMax Scaler is not implemented");
+        } else if(scaler == ScalerType::robust) {
+            // TODO: Implement
+            throw std::logic_error("Robust Scaler is not implemented");
+        } else if(scaler == ScalerType::zScore) {
+            T meanVal = X.meanOfRow(featureIndex);
+            T stdDevVal = X.stdDevOfRow(featureIndex);
+
+            for(std::size_t i = 0; i < X.cols(); i++) {
+                X(featureIndex, i) = (X(featureIndex, i) - meanVal) / stdDevVal;
+            }
+        } else {
+            throw std::logic_error("Scaler type unkown");
+        }
     }
 
     template<Math::floatTypes T>
