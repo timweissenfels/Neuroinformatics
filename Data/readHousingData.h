@@ -60,7 +60,7 @@ std::vector<HousingRecord> readHousingData(const std::string& filename) {
 
 std::pair<Math::Matrix<float>, Math::Matrix<float>> getXandYVectors(const std::vector<HousingRecord> &records) {
     using namespace Math;
-    Matrix<float> X(9, records.size(), 0); // 9 features
+    Matrix<float> X(12, records.size(), 0); // 9 features
     Matrix<float> Y(1, records.size(), 0); // target variable
 
     for (std::size_t i = 0; i < records.size(); ++i) {
@@ -72,8 +72,11 @@ std::pair<Math::Matrix<float>, Math::Matrix<float>> getXandYVectors(const std::v
         X(4, i) = r.totalBedrooms;
         X(5, i) = r.population;
         X(6, i) = r.households;
-        X(7, i) = r.medianIncome;
-        X(8, i) = r.oceanProximity; // categorical feature as numeric
+        X(7,i) = (r.totalBedrooms+1)/(r.households+1); // bedrooms per household
+        X(8, i) = (r.totalBedrooms+1)/(r.totalRooms+1); // bedrooms per room
+        X(9, i) = (r.population+1)/(r.households+1);
+        X(10, i) = r.medianIncome;
+        X(11, i) = r.oceanProximity; // categorical feature as numeric (not optimal) one-hot-encoding better?
 
         Y(0, i) = r.medianHouseValue; // Target label
     }
