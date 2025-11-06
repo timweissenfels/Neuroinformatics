@@ -6,21 +6,30 @@
 #include "NeuralNetworks/LossType.h"
 #include "Math/Matrix.h"
 #include "Misc/generateNNDataLogicCurcit.h"
+#include "Data/readHousingData.h"
+#include "NeuralNetworks/ScalerType.h"
 
 void sinPOC() {
-    auto X = Math::Matrix<float>(1,71,0);
-    auto Y = Math::Matrix<float>(1,71,0);
+    auto X = Math::Matrix<float>(1,701,0);
+    auto Y = Math::Matrix<float>(1,701,0);
 
-    for(int i = 0; i <= 70; i++) {
-        X(0, i) = static_cast<float>(i)/10;
-        Y(0,i) = sinf(static_cast<float>(i)/10) + cosf(static_cast<float>(i)/10);
+    for(int i = 0; i <= 700; i++) {
+        X(0, i) = static_cast<float>(i)/100;
+        Y(0,i) = sinf(static_cast<float>(i)/100) + cosf(static_cast<float>(i)/100);
     }
 
     NeuralNetworks::NeuralNetwork<float> sinNN(NeuralNetworks::LossType::MSE, 0.09, 5000, 32, 42);
-    sinNN.AddDenseLayer(1,4,NeuralNetworks::ActivationTypes::Tanh);
-    sinNN.AddDenseLayer(4,1,NeuralNetworks::ActivationTypes::Linear);
+    sinNN.AddDenseLayer(1,16,NeuralNetworks::ActivationTypes::Tanh);
+    sinNN.AddDenseLayer(16,16,NeuralNetworks::ActivationTypes::Tanh);
+    sinNN.AddDenseLayer(16,1,NeuralNetworks::ActivationTypes::Linear);
 
-    auto finalLoss = sinNN.train(X, Y, true, true, 1000);
+    auto [XTrain, YTrain, XTest, YTest] = sinNN.trainTestSplit(X, Y, 0.8f);
+
+    auto finalLoss = sinNN.train(XTrain, YTrain, true, true, 1000);
+
+    auto test_loss = sinNN.forward(XTest);
+
+    std::cout << "Test Loss: " << sinNN.compute_loss(YTest, test_loss) << "\n";
 
     std::cout << "final loss " << finalLoss << "\n";
 }
@@ -86,9 +95,7 @@ std::pair<Math::Matrix<float>, Math::Matrix<float>> generateNNDataLogicCurcit() 
 }
 
 void logicPOC() {
-    auto data = generateNNDataLogicCurcit();
-    auto& X = data.first;
-    auto& Y = data.second;
+    const auto& [X, Y] = generateNNDataLogicCurcit();
 
     NeuralNetworks::NeuralNetwork<float> xorNN(NeuralNetworks::LossType::BCE, 0.05, 5000, 32, 42);
     xorNN.AddDenseLayer(3,8,NeuralNetworks::ActivationTypes::Tanh);
@@ -100,10 +107,50 @@ void logicPOC() {
     std::cout << "final loss " << finalLoss << "\n";
 }
 
+void housingPOC() {
+    auto data = readHousingData("C:\\Users\\UI703201\\Desktop\\Neuroinformatics\\Data\\housing.csv");
+    const auto& [X, Y] = getXandYVectors(data);
+
+
+    NeuralNetworks::NeuralNetwork<float> housingNN(NeuralNetworks::LossType::MSE, 0.001, 500, 32, 42);
+    auto [XTrain, YTrain, XTest, YTest] = housingNN.trainTestSplit(X, Y, 0.8f);
+
+
+    // Scalings are fucked up, stddev and mean should be calculated on training data only and then applied to test set
+    for(int i = 3; i < X.rows()-1; i++) {
+        XTrain.log1pInplaceOfRow(i);
+        XTest.log1pInplaceOfRow(i);
+    }
+
+    for(int i = 0; i < X.rows(); i++) {
+        NeuralNetworks::NeuralNetwork<float>::inplaceScaleFeature(i, XTrain, NeuralNetworks::ScalerType::zScore);
+        NeuralNetworks::NeuralNetwork<float>::inplaceScaleFeature(i, XTest, NeuralNetworks::ScalerType::zScore);
+    }
+
+    YTrain.log1pInplaceOfRow(0);
+    NeuralNetworks::NeuralNetwork<float>::inplaceScaleFeature(0, YTrain, NeuralNetworks::ScalerType::zScore);
+
+    YTest.log1pInplaceOfRow(0);
+    NeuralNetworks::NeuralNetwork<float>::inplaceScaleFeature(0, YTest, NeuralNetworks::ScalerType::zScore);
+
+    housingNN.AddDenseLayer(12,128,NeuralNetworks::ActivationTypes::Tanh);
+    housingNN.AddDenseLayer(128,64,NeuralNetworks::ActivationTypes::Tanh);
+    housingNN.AddDenseLayer(64,1,NeuralNetworks::ActivationTypes::Linear);
+
+    auto finalLoss = housingNN.train(XTrain, YTrain, true, true, 100);
+
+    auto test_loss = housingNN.forward(XTest);
+
+    std::cout << "Test Loss: " << housingNN.compute_loss(YTest, test_loss) << "\n";
+
+    std::cout << "final loss " << finalLoss << "\n";
+}
+
 int main() {
-    sinPOC();
-    xorPOC();
-    logicPOC();
+    // sinPOC();
+    // xorPOC();
+    // logicPOC();
+    housingPOC();
 
     return 0;
 }
