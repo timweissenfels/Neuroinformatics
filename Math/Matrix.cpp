@@ -229,6 +229,13 @@ namespace Math {
         }
     }
 
+    template <floatTypes T>
+    void Matrix<T>::log1pInplaceOfRow(const std::size_t row) {
+        for (std::size_t c = 0; c < this->cols_; ++c) {
+             this->operator()(row,c) = Functions::log1p((*this)(row,c));
+        }
+    }
+
     // TODO: Improvable by a LOT
     template<floatTypes T>
     Matrix<T> Matrix<T>::hadamard(const Matrix &other) const {
@@ -358,6 +365,11 @@ namespace Math {
     template<floatTypes T>
     Matrix<T> Matrix<T>::elu(const double alpha) const {
         return this->map([&](T num){return Math::Functions::elu(num, alpha);});
+    }
+
+    template <floatTypes T>
+    Matrix<T> Matrix<T>::log1p() const {
+        return this->map([](T num){return Math::Functions::log1p(num);});
     }
 
     template class Matrix<float>;

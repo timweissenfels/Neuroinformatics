@@ -81,6 +81,7 @@ public:
     [[nodiscard]] Matrix sigmoid() const;
     [[nodiscard]] Matrix relu() const;
     [[nodiscard]] Matrix elu(const double) const;
+    [[nodiscard]] Matrix log1p() const;
     [[nodiscard]] Matrix softplus() const;
     [[nodiscard]] Matrix linear() const;
     [[nodiscard]] Matrix mish() const;
@@ -92,6 +93,7 @@ public:
     void fill(const T& value);
     void addInplace(const Matrix& other);
     void subInplace(const Matrix& other);
+    void log1pInplaceOfRow(const std::size_t row);
 };
 
     // ChatGPT generated

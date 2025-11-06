@@ -19,6 +19,14 @@ namespace Math::Functions {
         return (std::exp(num) - std::exp(-num)) / (std::exp(num) + std::exp(-num)); //Okay to use std::tanh?
     }
 
+    template <class T>
+    T log1p(T num) {
+        if(num <= -1)
+            throw std::invalid_argument("log1p is undefined for num <= -1");
+
+        return log(std::exp(1.0), T{1} + num);
+    }
+
     // TODO: Check if its numerically stable for large |Z|
     template <class T>
     T sigmoid(T num) {
@@ -71,4 +79,5 @@ namespace Math::Functions {
         return std::clamp(num, epsilon, T{1} - epsilon);
     }
 }
+
 #endif // FUNCTIONS_H
