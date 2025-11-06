@@ -6,33 +6,32 @@
 #include "NeuralNetworks/LossType.h"
 #include "Math/Matrix.h"
 #include "Misc/generateNNDataLogicCurcit.h"
+#include "Data/readHousingData.h"
+#include "NeuralNetworks/ScalerType.h"
 
 void sinPOC() {
-    auto X = Math::Matrix<float>(1,71,0);
-    auto Y = Math::Matrix<float>(1,71,0);
+    auto X = Math::Matrix<float>(1,701,0);
+    auto Y = Math::Matrix<float>(1,701,0);
 
-    for(int i = 0; i <= 70; i++) {
-        X(0, i) = (float)i/10;
-        Y(0,i) = sinf((float)i/10) + cosf((float)i/10);
+    for(int i = 0; i <= 700; i++) {
+        X(0, i) = static_cast<float>(i)/100;
+        Y(0,i) = sinf(static_cast<float>(i)/100) + cosf(static_cast<float>(i)/100);
     }
 
-    NeuralNetworks::NeuralNetwork sinNN(NeuralNetworks::LossType::MSE, (double)0.09, 1000, 32, 42, X);
-    sinNN.AddDenseLayer(1,4,NeuralNetworks::ActivationTypes::Tanh);
-    sinNN.AddDenseLayer(4,1,NeuralNetworks::ActivationTypes::Linear);
+    NeuralNetworks::NeuralNetwork<float> sinNN(NeuralNetworks::LossType::MSE, 0.09, 5000, 32, 42);
+    sinNN.AddDenseLayer(1,16,NeuralNetworks::ActivationTypes::Tanh);
+    sinNN.AddDenseLayer(16,16,NeuralNetworks::ActivationTypes::Tanh);
+    sinNN.AddDenseLayer(16,1,NeuralNetworks::ActivationTypes::Linear);
 
-    auto start = std::chrono::high_resolution_clock::now();
+    auto [XTrain, YTrain, XTest, YTest] = sinNN.trainTestSplit(X, Y, 0.8f);
 
-    for (int step = 0; step < 5000; ++step) {
-        auto YHat = sinNN.forward(X);
-        float loss = sinNN.compute_loss(Y, YHat);
-        if (step % 50 == 0) std::cout << "step " << step << " loss " << loss << "\n";
-        sinNN.backward(Y, YHat);
-        sinNN.update();
-    }
+    auto finalLoss = sinNN.train(XTrain, YTrain, true, true, 1000);
 
-    auto YHat = sinNN.forward(X);
-    std::cout << "final loss " << sinNN.compute_loss(Y, YHat) << "\n";
-    std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start);
+    auto test_loss = sinNN.forward(XTest);
+
+    std::cout << "Test Loss: " << sinNN.compute_loss(YTest, test_loss) << "\n";
+
+    std::cout << "final loss " << finalLoss << "\n";
 }
 
 void xorPOC() {
@@ -55,23 +54,12 @@ void xorPOC() {
     X(1,3) = 1;
     Y(0,3) = 0;
 
-    NeuralNetworks::NeuralNetwork xorNN(NeuralNetworks::LossType::BCE, (double)0.05, 1000, 32, 42, X);
+    NeuralNetworks::NeuralNetwork<float> xorNN(NeuralNetworks::LossType::BCE, (double)0.05, 5000, 32, 42);
     xorNN.AddDenseLayer(2,8,NeuralNetworks::ActivationTypes::ReLU);
     xorNN.AddDenseLayer(8,1,NeuralNetworks::ActivationTypes::Sigmoid);
 
-    auto start = std::chrono::high_resolution_clock::now();
-
-    for (int step = 0; step < 5000; ++step) {
-        auto YHat = xorNN.forward(X);
-        float loss = xorNN.compute_loss(Y, YHat);
-        if (step % 50 == 0) std::cout << "step " << step << " loss " << loss << "\n";
-        xorNN.backward(Y, YHat);
-        xorNN.update();
-    }
-
-    auto YHat = xorNN.forward(X);
-    std::cout << "final loss " << xorNN.compute_loss(Y, YHat) << "\n";
-    std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start);
+    auto finalLoss = xorNN.train(X, Y, true, true, 1000);
+    std::cout << "final loss " << finalLoss << "\n";
 }
 
 std::pair<Math::Matrix<float>, Math::Matrix<float>> generateNNDataLogicCurcit() {
@@ -107,35 +95,62 @@ std::pair<Math::Matrix<float>, Math::Matrix<float>> generateNNDataLogicCurcit() 
 }
 
 void logicPOC() {
-    auto data = generateNNDataLogicCurcit();
-    auto X = data.first;
-    auto Y = data.second;
+    const auto& [X, Y] = generateNNDataLogicCurcit();
 
-    NeuralNetworks::NeuralNetwork xorNN(NeuralNetworks::LossType::BCE, (double)0.05, 1000, 32, 42, X);
+    NeuralNetworks::NeuralNetwork<float> xorNN(NeuralNetworks::LossType::BCE, 0.05, 5000, 32, 42);
     xorNN.AddDenseLayer(3,8,NeuralNetworks::ActivationTypes::Tanh);
     xorNN.AddDenseLayer(8,8,NeuralNetworks::ActivationTypes::Tanh);
     xorNN.AddDenseLayer(8,1,NeuralNetworks::ActivationTypes::Sigmoid);
 
-    auto start = std::chrono::high_resolution_clock::now();
+    auto finalLoss = xorNN.train(X, Y, true, true, 5000);
 
-    for (int step = 0; step < 5000; ++step) {
-        auto YHat = xorNN.forward(X);
-        float loss = xorNN.compute_loss(Y, YHat);
-        if (step % 50 == 0) std::cout << "step " << step << " loss " << loss << "\n";
-        xorNN.backward(Y, YHat);
-        xorNN.update();
+    std::cout << "final loss " << finalLoss << "\n";
+}
+
+void housingPOC() {
+    auto data = readHousingData("C:\\Users\\UI703201\\Desktop\\Neuroinformatics\\Data\\housing.csv");
+    const auto& [X, Y] = getXandYVectors(data);
+
+
+    NeuralNetworks::NeuralNetwork<float> housingNN(NeuralNetworks::LossType::MSE, 0.001, 500, 32, 42);
+    auto [XTrain, YTrain, XTest, YTest] = housingNN.trainTestSplit(X, Y, 0.8f);
+
+
+    // Scalings are fucked up, stddev and mean should be calculated on training data only and then applied to test set
+    for(int i = 3; i < X.rows()-1; i++) {
+        XTrain.log1pInplaceOfRow(i);
+        XTest.log1pInplaceOfRow(i);
     }
 
-    auto YHat = xorNN.forward(X);
-    std::cout << "final loss " << xorNN.compute_loss(Y, YHat) << "\n";
-    std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start);
+    for(int i = 0; i < X.rows(); i++) {
+        NeuralNetworks::NeuralNetwork<float>::inplaceScaleFeature(i, XTrain, NeuralNetworks::ScalerType::zScore);
+        NeuralNetworks::NeuralNetwork<float>::inplaceScaleFeature(i, XTest, NeuralNetworks::ScalerType::zScore);
+    }
 
+    YTrain.log1pInplaceOfRow(0);
+    NeuralNetworks::NeuralNetwork<float>::inplaceScaleFeature(0, YTrain, NeuralNetworks::ScalerType::zScore);
+
+    YTest.log1pInplaceOfRow(0);
+    NeuralNetworks::NeuralNetwork<float>::inplaceScaleFeature(0, YTest, NeuralNetworks::ScalerType::zScore);
+
+    housingNN.AddDenseLayer(12,128,NeuralNetworks::ActivationTypes::Tanh);
+    housingNN.AddDenseLayer(128,64,NeuralNetworks::ActivationTypes::Tanh);
+    housingNN.AddDenseLayer(64,1,NeuralNetworks::ActivationTypes::Linear);
+
+    auto finalLoss = housingNN.train(XTrain, YTrain, true, true, 100);
+
+    auto test_loss = housingNN.forward(XTest);
+
+    std::cout << "Test Loss: " << housingNN.compute_loss(YTest, test_loss) << "\n";
+
+    std::cout << "final loss " << finalLoss << "\n";
 }
 
 int main() {
-    sinPOC();
+    // sinPOC();
     // xorPOC();
-    //logicPOC();
+    // logicPOC();
+    housingPOC();
 
     return 0;
 }
