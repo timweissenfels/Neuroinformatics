@@ -148,9 +148,9 @@ void housingPOC() {
 
 int main() {
     // sinPOC();
-    // xorPOC();
+     xorPOC();
     // logicPOC();
-    housingPOC();
+    //housingPOC();
 
     return 0;
 }
