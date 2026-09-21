@@ -1,6 +1,8 @@
 //
 // Created by timwe on 10/17/2025.
 //
+#ifndef FUNCTIONS_H
+#define FUNCTIONS_H
 
 #include <iostream>
 #include <algorithm>
@@ -15,6 +17,14 @@ namespace Math::Functions {
     template <class T>
     T tanh(T num) {
         return (std::exp(num) - std::exp(-num)) / (std::exp(num) + std::exp(-num)); //Okay to use std::tanh?
+    }
+
+    template <class T>
+    T log1p(T num) {
+        if(num <= -1)
+            throw std::invalid_argument("log1p is undefined for num <= -1");
+
+        return log(std::exp(1.0), T{1} + num);
     }
 
     // TODO: Check if its numerically stable for large |Z|
@@ -69,3 +79,5 @@ namespace Math::Functions {
         return std::clamp(num, epsilon, T{1} - epsilon);
     }
 }
+
+#endif // FUNCTIONS_H

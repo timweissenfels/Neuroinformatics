@@ -88,13 +88,37 @@ namespace Math {
     Matrix<T> Matrix<T>::transpose() const {
         Matrix<T> result(cols_, rows_, 0); // Swap rows and col sizes / make sure stride gets recalculated
 
-        for (std::size_t c = 0; c < cols_; ++c) {
-            for (std::size_t r = 0; r < rows_; ++r) {
+        for (std::size_t c = 0; c < this->cols_; ++c) {
+            for (std::size_t r = 0; r < this->rows_; ++r) {
                 result(c,r) = (*this)(r,c);
             }
         }
 
         return result;
+    }
+
+    template<floatTypes T>
+    T Matrix<T>::meanOfRow(const std::size_t row) const {
+        T result = 0;
+
+        for (std::size_t c = 0; c < this->cols_; ++c) {
+                result += (*this)(row,c);
+            }
+
+        return result /  this->cols_;
+    }
+
+    template<floatTypes T>
+    T Matrix<T>::stdDevOfRow(const std::size_t row) const {
+        T result = 0;
+
+        const T mean = this->meanOfRow(row);
+
+        for (std::size_t c = 0; c < this->cols_; ++c) {
+            result += ((*this)(row,c) - mean) * ((*this)(row,c) - mean);
+        }
+
+        return std::sqrt((T{1}/(static_cast<T>(this->cols_) - T{1})) * result);
     }
 
     template<floatTypes T>
@@ -202,6 +226,13 @@ namespace Math {
             for (std::size_t c = 0; c < this->cols_; ++c) {
                 this->operator()(r,c) = this->operator()(r,c) - other(r,c);
             }
+        }
+    }
+
+    template <floatTypes T>
+    void Matrix<T>::log1pInplaceOfRow(const std::size_t row) {
+        for (std::size_t c = 0; c < this->cols_; ++c) {
+             this->operator()(row,c) = Functions::log1p((*this)(row,c));
         }
     }
 
@@ -334,6 +365,11 @@ namespace Math {
     template<floatTypes T>
     Matrix<T> Matrix<T>::elu(const double alpha) const {
         return this->map([&](T num){return Math::Functions::elu(num, alpha);});
+    }
+
+    template <floatTypes T>
+    Matrix<T> Matrix<T>::log1p() const {
+        return this->map([](T num){return Math::Functions::log1p(num);});
     }
 
     template class Matrix<float>;
